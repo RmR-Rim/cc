@@ -1,0 +1,1 @@
+local BASE = "https://raw.githubusercontent.com/RmR-Rim/CC/main/"
