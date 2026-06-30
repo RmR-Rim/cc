@@ -48,20 +48,42 @@ local function getColorScheme(weather)
     return schemes[weather] or schemes.night
 end
 
+-- Получение текущего часа
+local function getCurrentHour()
+    -- Способ 1: через os.time() и форматирование
+    local time = os.time()
+    local timeString = textutils.formatTime(time, false)
+    
+    -- Ищем часы в строке (первое число до двоеточия)
+    local hours = string.match(timeString, "^(%d+):")
+    
+    if hours then
+        return tonumber(hours)
+    end
+    
+    -- Способ 2: вычисляем из os.time() (если способ 1 не сработал)
+    -- os.time() в ComputerCraft возвращает время в тиках от начала дня
+    -- 0 = 06:00, так что пересчитываем
+    hours = math.floor((time / 1000) + 6) % 24
+    
+    return hours
+end
+
 -- Определение погоды
 local function getWeather()
     local signal = rs.getAnalogInput(sensorSide)
     
-    -- Если нет сигнала — датчик не подключен
+    -- Отладка в терминал
+    local hour = getCurrentHour()
+    print(string.format("Debug: Signal=%d, Hour=%d", signal or -1, hour))
+    
+    -- Если нет сигнала
     if signal == nil then
         return "unknown"
     end
     
-    local time = os.time()
-    local hours = tonumber(string.sub(textutils.formatTime(time, false), 1, 2))
-    
     -- Ночью сигнал всегда 0
-    if hours < 6 or hours > 18 then
+    if hour < 6 or hour >= 18 then
         return "night"
     end
     
